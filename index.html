@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c28;
+    --border: #2a2a3a;
+    --accent: #6c63ff;
+    --accent2: #ff6b6b;
+    --accent3: #43e97b;
+    --text: #e8e8f0;
+    --text-muted: #6b6b85;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* LAYOUT */
+  .app { display: flex; height: 100vh; overflow: hidden; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 240px; min-width: 240px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    padding: 0;
+  }
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 22px;
+    letter-spacing: -0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-logo span { color: var(--accent); }
+  .sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; }
+  .nav-section { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; color: var(--text-muted); text-transform: uppercase; padding: 12px 8px 6px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 8px;
+    cursor: pointer; font-size: 14px; font-weight: 500;
+    color: var(--text-muted); transition: all 0.18s;
+    border: none; background: none; width: 100%; text-align: left;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--accent)22; color: var(--accent); }
+  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+  .nav-item .badge {
+    margin-left: auto; background: var(--accent); color: #fff;
+    font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 20px;
+  }
+  .sidebar-user {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .user-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--accent); display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px; color: #fff;
+  }
+  .user-name { font-size: 13px; font-weight: 500; }
+  .user-role { font-size: 11px; color: var(--text-muted); }
+
+  /* MAIN */
+  .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 28px;
+    display: flex; align-items: center; gap: 16px;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .topbar-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; flex: 1; }
+  .topbar-search {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 14px; width: 220px;
+  }
+  .topbar-search input { background: none; border: none; outline: none; color: var(--text); font-size: 13px; width: 100%; font-family: 'DM Sans', sans-serif; }
+  .topbar-search input::placeholder { color: var(--text-muted); }
+  .btn {
+    padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 13px;
+    transition: all 0.18s; display: flex; align-items: center; gap: 6px;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #7d75ff; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: var(--accent2)22; color: var(--accent2); border: 1px solid var(--accent2)44; }
+  .btn-danger:hover { background: var(--accent2)44; }
+  .btn-success { background: var(--accent3)22; color: var(--accent3); border: 1px solid var(--accent3)44; }
+  .btn-success:hover { background: var(--accent3)44; }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+
+  /* PAGE CONTENT */
+  .page { display: none; padding: 28px; }
+  .page.active { display: block; }
+
+  /* CARDS */
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+  }
+  .stat-label { font-size: 12px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+  .stat-change { font-size: 12px; }
+  .stat-change.up { color: var(--accent3); }
+  .stat-change.down { color: var(--accent2); }
+  .stat-icon { font-size: 24px; margin-bottom: 10px; }
+
+  /* TABLES */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+  }
+  .card-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .card-header h3 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; flex: 1; }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    padding: 12px 16px; text-align: left;
+    font-size: 11px; font-weight: 600; letter-spacing: 1px;
+    color: var(--text-muted); text-transform: uppercase;
+    background: var(--surface2); border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 13px 16px; font-size: 13px;
+    border-bottom: 1px solid var(--border)88;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2)88; }
+
+  /* TAGS */
+  .tag {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+  }
+  .tag-green { background: #43e97b22; color: #43e97b; border: 1px solid #43e97b33; }
+  .tag-red { background: #ff6b6b22; color: #ff6b6b; border: 1px solid #ff6b6b33; }
+  .tag-blue { background: #6c63ff22; color: #6c63ff; border: 1px solid #6c63ff33; }
+  .tag-yellow { background: #ffd93d22; color: #ffd93d; border: 1px solid #ffd93d33; }
+  .tag-gray { background: #6b6b8522; color: #9b9bb5; border: 1px solid #6b6b8533; }
+
+  /* AVATAR */
+  .avatar-cell { display: flex; align-items: center; gap: 10px; }
+  .avatar-sm {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+  .a1 { background: #6c63ff; } .a2 { background: #ff6b6b; }
+  .a3 { background: #43e97b; } .a4 { background: #ffd93d; color: #333; }
+  .a5 { background: #f093fb; } .a6 { background: #4facfe; }
+  .a7 { background: #fa709a; } .a8 { background: #30cfd0; }
+
+  /* GRID COLS */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+  /* PIPELINE */
+  .pipeline { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; }
+  .pipeline-col {
+    min-width: 240px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px;
+  }
+  .pipeline-col-header {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 14px; font-weight: 600; font-size: 13px;
+  }
+  .pipeline-count {
+    background: var(--border); color: var(--text-muted);
+    border-radius: 20px; padding: 1px 8px; font-size: 11px;
+    margin-left: auto;
+  }
+  .pipeline-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px; margin-bottom: 10px;
+    cursor: pointer; transition: all 0.18s;
+  }
+  .pipeline-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .pipeline-card h4 { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .pipeline-card .company { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+  .pipeline-card .value { font-size: 14px; font-weight: 700; color: var(--accent3); }
+  .pipeline-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* FORM */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: #000a; z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px; width: 520px; max-width: 95vw;
+    max-height: 90vh; overflow-y: auto;
+    animation: slideIn 0.2s ease;
+  }
+  @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal h2 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none;
+    transition: border-color 0.18s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
+  .form-group select option { background: var(--surface2); }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+
+  /* ACTIVITY */
+  .activity-list { padding: 0; }
+  .activity-item {
+    display: flex; gap: 14px; padding: 14px 20px;
+    border-bottom: 1px solid var(--border)66;
+    align-items: flex-start;
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-icon {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0; margin-top: 2px;
+  }
+  .activity-content { flex: 1; }
+  .activity-content strong { font-size: 13px; font-weight: 600; }
+  .activity-content p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .activity-time { font-size: 11px; color: var(--text-muted); flex-shrink: 0; margin-top: 4px; }
+
+  /* PROGRESS BAR */
+  .progress-bar { background: var(--surface2); border-radius: 20px; height: 6px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 20px; transition: width 0.5s; }
+
+  /* VENDAS PAGE */
+  .vendas-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .tab-filters { display: flex; gap: 8px; margin-bottom: 20px; }
+  .filter-btn {
+    padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border);
+    background: none; color: var(--text-muted); cursor: pointer;
+    font-size: 13px; font-weight: 500; transition: all 0.18s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .filter-btn:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .stat-grid, .vendas-stats { grid-template-columns: 1fr 1fr; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .sidebar { width: 200px; min-width: 200px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">CRM<span>.</span>Pro</div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Principal</div>
+      <button class="nav-item active" onclick="showPage('dashboard', this)"><span class="icon">📊</span> Dashboard</button>
+      <button class="nav-item" onclick="showPage('clientes', this)"><span class="icon">👥</span> Clientes <span class="badge" id="badge-clientes">8</span></button>
+      <button class="nav-item" onclick="showPage('contatos', this)"><span class="icon">📇</span> Contatos</button>
+      <button class="nav-item" onclick="showPage('negocios', this)"><span class="icon">💼</span> Negócios</button>
+      <div class="nav-section">Comercial</div>
+      <button class="nav-item" onclick="showPage('vendas', this)"><span class="icon">💰</span> Vendas</button>
+      <button class="nav-item" onclick="showPage('tarefas', this)"><span class="icon">✅</span> Tarefas <span class="badge" id="badge-tarefas">3</span></button>
+      <div class="nav-section">Análise</div>
+      <button class="nav-item" onclick="showPage('relatorios', this)"><span class="icon">📈</span> Relatórios</button>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar">JM</div>
+      <div>
+        <div class="user-name">João Marcos</div>
+        <div class="user-role">Gerente de Vendas</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ====== DASHBOARD ====== -->
+    <div class="page active" id="page-dashboard">
+      <div class="topbar">
+        <div class="topbar-title">Dashboard</div>
+        <div class="topbar-search"><span>🔍</span><input type="text" placeholder="Buscar..."></div>
+      </div>
+      <div style="padding:28px">
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-label">Clientes Ativos</div><div class="stat-value">248</div><div class="stat-change up">▲ 12% este mês</div></div>
+          <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-label">Receita Total</div><div class="stat-value" style="color:var(--accent3)">R$184k</div><div class="stat-change up">▲ 8.3% este mês</div></div>
+          <div class="stat-card"><div class="stat-icon">💼</div><div class="stat-label">Negócios Abertos</div><div class="stat-value" style="color:var(--accent)">34</div><div class="stat-change up">▲ 5 novos</div></div>
+          <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-label">Taxa de Conversão</div><div class="stat-value" style="color:var(--accent2)">68%</div><div class="stat-change down">▼ 2% vs anterior</div></div>
+        </div>
+        <div class="grid-2" style="margin-bottom:20px">
+          <div class="card">
+            <div class="card-header"><h3>🔥 Negócios Quentes</h3><button class="btn btn-outline btn-sm" onclick="showPage('negocios', document.querySelector('[onclick*=negocios]'))">Ver todos</button></div>
+            <table>
+              <thead><tr><th>Empresa</th><th>Responsável</th><th>Valor</th><th>Etapa</th></tr></thead>
+              <tbody>
+                <tr><td><div class="avatar-cell"><div class="avatar-sm a1">TK</div>TechKorp</div></td><td>Ana Silva</td><td style="color:var(--accent3);font-weight:700">R$48.000</td><td><span class="tag tag-yellow">Proposta</span></td></tr>
+                <tr><td><div class="avatar-cell"><div class="avatar-sm a2">ID</div>Inovadev</div></td><td>Carlos Lima</td><td style="color:var(--accent3);font-weight:700">R$32.500</td><td><span class="tag tag-blue">Negociação</span></td></tr>
+                <tr><td><div class="avatar-cell"><div class="avatar-sm a3">SC</div>SoftCorp</div></td><td>Mariana Souza</td><td style="color:var(--accent3);font-weight:700">R$21.000</td><td><span class="tag tag-green">Fechado</span></td></tr>
+                <tr><td><div class="avatar-cell"><div class="avatar-sm a4">DX</div>Digitalex</div></td><td>João Marcos</td><td style="color:var(--accent3);font-weight:700">R$18.700</td><td><span class="tag tag-yellow">Proposta</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>⚡ Atividade Recente</h3></div>
+            <div class="activity-list">
+              <div class="activity-item"><div class="activity-icon" style="background:#6c63ff22;color:#6c63ff">📧</div><div class="activity-content"><strong>Email enviado para TechKorp</strong><p>Proposta comercial enviada — Ana Silva</p></div><div class="activity-time">há 20min</div></div>
+              <div class="activity-item"><div class="activity-icon" style="background:#43e97b22;color:#43e97b">✅</div><div class="activity-content"><strong>Negócio fechado com SoftCorp</strong><p>R$21.000 — Mariana Souza</p></div><div class="activity-time">há 1h</div></div>
+              <div class="activity-item"><div class="activity-icon" style="background:#ffd93d22;color:#ffd93d">📞</div><div class="activity-content"><strong>Ligação com Inovadev</strong><p>Reunião marcada para amanhã — Carlos Lima</p></div><div class="activity-time">há 3h</div></div>
+              <div class="activity-item"><div class="activity-icon" style="background:#ff6b6b22;color:#ff6b6b">👤</div><div class="activity-content"><strong>Novo cliente cadastrado</strong><p>Digitalex Soluções — João Marcos</p></div><div class="activity-time">hoje</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>📊 Performance da Equipe</h3></div>
+          <table>
+            <thead><tr><th>Vendedor</th><th>Clientes</th><th>Negócios</th><th>Receita</th><th>Meta</th><th>Progresso</th></tr></thead>
+            <tbody>
+              <tr><td><div class="avatar-cell"><div class="avatar-sm a5">MS</div>Mariana Souza</div></td><td>62</td><td>14</td><td style="color:var(--accent3);font-weight:600">R$52.300</td><td>R$60k</td><td><div class="progress-bar" style="width:120px"><div class="progress-fill" style="width:87%;background:#43e97b"></div></div></td></tr>
+              <tr><td><div class="avatar-cell"><div class="avatar-sm a1">AS</div>Ana Silva</div></td><td>54</td><td>11</td><td style="color:var(--accent3);font-weight:600">R$48.100</td><td>R$55k</td><td><div class="progress-bar" style="width:120px"><div class="progress-fill" style="width:87%;background:#6c63ff"></div></div></td></tr>
+              <tr><td><div class="avatar-cell"><div class="avatar-sm a6">CL</div>Carlos Lima</div></td><td>48</td><td>9</td><td style="color:var(--accent3);font-weight:600">R$41.200</td><td>R$50k</td><td><div class="progress-bar" style="width:120px"><div class="progress-fill" style="width:82%;background:#4facfe"></div></div></td></tr>
+              <tr><td><div class="avatar-cell"><div class="avatar-sm a4">JM</div>João Marcos</div></td><td>84</td><td>0</td><td style="color:var(--accent3);font-weight:600">R$42.400</td><td>R$70k</td><td><div class="progress-bar" style="width:120px"><div class="progress-fill" style="width:61%;background:#ffd93d"></div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== CLIENTES ====== -->
+    <div class="page" id="page-clientes">
+      <div class="topbar">
+        <div class="topbar-title">Clientes</div>
+        <div class="topbar-search"><span>🔍</span><input type="text" placeholder="Buscar cliente..."></div>
+        <button class="btn btn-primary" onclick="openModal('modal-cliente')">+ Novo Cliente</button>
+      </div>
+      <div style="padding:28px">
+        <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card"><div class="stat-label">Total Clientes</div><div class="stat-value">248</div></div>
+          <div class="stat-card"><div class="stat-label">Ativos</div><div class="stat-value" style="color:var(--accent3)">201</div></div>
+          <div class="stat-card"><div class="stat-label">Inativos</div><div class="stat-value" style="color:var(--accent2)">47</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>👥 Lista de Clientes</h3>
+            <select style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-size:13px;outline:none"><option>Todos</option><option>Ativos</option><option>Inativos</option></select>
+          </div>
+          <table>
+            <thead><tr><th>Nome/Empresa</th><th>Email</th><th>Telefone</th><th>Status</th><th>Valor Total</th><th>Ações</th></tr></thead>
+            <tbody id="clientes-tbody">
+              <tr><td><div class="avatar-cell"><div class="avatar-sm a1">TK</div><div><strong>TechKorp Ltda</strong><div style="font-size:11px;color:var(--text-muted)">São Paulo, SP</div></div></div></td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="64070b0a1005100b241001070c0f0b16144a070b094a0616">[email&#160;protected]</a></td><td>(11) 9 8765-4321</td><td><span class="tag tag-green">Ativo</span></td><td style="font-weight:700;color:var(--accent3)">R$128.000</td><td><button class="btn btn-outline btn-sm" onclick="openModal('modal-detalhe')">Ver</button></td></tr>
+              <tr><td><div class="avatar-cell"><div class="avatar-sm a2">ID</div><div><strong>Inovadev S.A.</strong><div style="font-size:11px;color:var(--text-muted)">Rio de Janeiro, RJ</div></div></div></td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f482919a909587b49d9a9b8295909182da979b99da9686">[email&#160;protected]</a></td><td>(21) 9 7654-3210</td><td><span class="tag tag-green">Ativo</span></td><td style="font-weight:700;color:var(--accent3)">R$85.500</td><td><button class="btn btn-outline btn-sm" onclick="openModal('modal-detalhe')">Ver</button></td></tr>
+              <tr><td><div class="avatar-cell"><div class="avatar-sm a3">SC</div><div><strong>SoftCorp Brasil</strong><div style="font-size:11px;color:var(--text-muted)">Belo Horizonte, MG</div></div></div></td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="49212c252526093a262f3d2a263b39672a2624672b3b">[email&#160;protected]</a></td><td>(31) 9 6543-2109</td><td><span class="tag tag-green">Ativo</span></td><td style="font-weight:700;color:var(--accent3)">R$67.200</td><td><button class="btn btn-outline btn-sm" onclick="openModal('modal-detalhe')">Ver</button></td></tr>
+              <tr><td><div class="avatar-cell"><div class="avatar-sm a4">DX</div><div><strong>Digitalex Soluções</strong><div style="font-size:11px;color:var(--text-muted)">Curitiba, PR</div></div></div></td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="92fbfcf4fdd2f6fbf5fbe6f3fef7eabcf1fdffbcf0e0">[email&#160;protected]</a></td><td>(41) 9 5432-1098</td><td><span class="tag tag-yellow">Prospecto</span></td><td style="font-weight:700;color:var(--accent3)">R$0</td><td><button class="btn btn-outline btn-sm" onclick="openModal('modal-detalhe')">Ver</button></td></tr>
+              <tr><td><div class="avatar-cell"><div class="avatar-sm a5">AR</div><div><strong>Arrowfield Agro</strong><div style="font-size:11px;color:var(--text-muted)">Ribeirão Preto, SP</div></div></div></td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="aac9cfc5eacbd8d8c5ddccc3cfc6ce84cbcdd884c8d8">[email&#160;protected]</a></td><td>(16) 9 4321-0987</td><td><span class="tag tag-red">Inativo</span></td><td style="font-weight:700;color:var(--accent2)">R$22.000</td><td><button class="btn btn-outline btn-sm" onclick="openModal('modal-detalhe')">Ver</button></td></tr>
+              <tr><td><div class="avatar-cell"><div class="avatar-sm a6">BL</div><div><strong>BlueLine Logística</strong><div style="font-size:11px;color:var(--text-muted)">Santos, SP</div></div></div></td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="442b34370426283121282d2a216a272b296a2636">[email&#160;protected]</a></td><td>(13) 9 3210-9876</td><td><span class="tag tag-green">Ativo</span></td><td style="font-weight:700;color:var(--accent3)">R$54.900</td><td><button class="btn btn-outline btn-sm" onclick="openModal('modal-detalhe')">Ver</button></td></tr>
+              <tr><td><div class="avatar-cell"><div class="avatar-sm a7">FS</div><div><strong>FastShop Commerce</strong><div style="font-size:11px;color:var(--text-muted)">São Paulo, SP</div></div></div></td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bcde8edefcdaddcfc8cfd4d3cc92dfd3d192dece">[email&#160;protected]</a></td><td>(11) 9 2109-8765</td><td><span class="tag tag-green">Ativo</span></td><td style="font-weight:700;color:var(--accent3)">R$93.400</td><td><button class="btn btn-outline btn-sm" onclick="openModal('modal-detalhe')">Ver</button></td></tr>
+              <tr><td><div class="avatar-cell"><div class="avatar-sm a8">MP</div><div><strong>MedPlus Saúde</strong><div style="font-size:11px;color:var(--text-muted)">Florianópolis, SC</div></div></div></td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="4a2925273a382b390a272f2e3a263f3964292527642838">[email&#160;protected]</a></td><td>(48) 9 1098-7654</td><td><span class="tag tag-green">Ativo</span></td><td style="font-weight:700;color:var(--accent3)">R$41.800</td><td><button class="btn btn-outline btn-sm" onclick="openModal('modal-detalhe')">Ver</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== CONTATOS ====== -->
+    <div class="page" id="page-contatos">
+      <div class="topbar">
+        <div class="topbar-title">Contatos</div>
+        <div class="topbar-search"><span>🔍</span><input type="text" placeholder="Buscar contato..."></div>
+        <button class="btn btn-primary" onclick="openModal('modal-contato')">+ Novo Contato</button>
+      </div>
+      <div style="padding:28px">
+        <div class="card">
+          <div class="card-header"><h3>📇 Todos os Contatos</h3></div>
+          <table>
+            <thead><tr><th>Nome</th><th>Cargo</th><th>Empresa</th><th>Email</th><th>Telefone</th><th>Últ. Contato</th><th>Ações</th></tr></thead>
+            <tbody>
+              <tr><td><div class="avatar-cell"><div class="avatar-sm a1">RS</div>Roberto Santos</div></td><td>CEO</td><td>TechKorp Ltda</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="95e7faf7f0e7e1fad5e1f0f6fdfefae7e5bbf6faf8bbf7e7">[email&#160;protected]</a></td><td>(11) 9 8765-0001</td><td>Hoje</td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+              <tr><td><div class="avatar-cell"><div class="avatar-sm a2">LF</div>Larissa Fernandes</div></td><td>Diretora Comercial</td><td>Inovadev S.A.</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="99f5f8ebf0eaeaf8d9f0f7f6eff8fdfcefb7faf6f4b7fbeb">[email&#160;protected]</a></td><td>(21) 9 7654-0002</td><td>Ontem</td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+              <tr><td><div class="avatar-cell"><div class="avatar-sm a3">PM</div>Pedro Machado</div></td><td>Gerente de TI</td><td>SoftCorp Brasil</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="83f3e6e7f1ecc3f0ece5f7e0ecf1f3ade0eceeade1f1">[email&#160;protected]</a></td><td>(31) 9 6543-0003</td><td>2 dias</td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+              <tr><td><div class="avatar-cell"><div class="avatar-sm a4">CA</div>Carla Andrade</div></td><td>Head de Marketing</td><td>Digitalex Soluções</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="294a485b4548694d404e405d48454c51074a4644074b5b">[email&#160;protected]</a></td><td>(41) 9 5432-0004</td><td>1 semana</td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+              <tr><td><div class="avatar-cell"><div class="avatar-sm a5">BN</div>Bruno Neves</div></td><td>Sócio-diretor</td><td>Arrowfield Agro</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2e4c5c5b40416e4f5c5c415948474b424a004f495c004c5c">[email&#160;protected]</a></td><td>(16) 9 4321-0005</td><td>3 semanas</td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+              <tr><td><div class="avatar-cell"><div class="avatar-sm a6">TQ</div>Thais Queiroz</div></td><td>Gerente de Operações</td><td>BlueLine Logística</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e4908c858d97a486889181888d8a81ca878b89ca8696">[email&#160;protected]</a></td><td>(13) 9 3210-0006</td><td>5 dias</td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+              <tr><td><div class="avatar-cell"><div class="avatar-sm a7">RV</div>Rafael Vasconcelos</div></td><td>Diretor de E-commerce</td><td>FastShop Commerce</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="9eecfff8fffbf2def8ffedeaedf6f1eeb0fdf1f3b0fcec">[email&#160;protected]</a></td><td>(11) 9 2109-0007</td><td>Hoje</td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== NEGÓCIOS (PIPELINE) ====== -->
+    <div class="page" id="page-negocios">
+      <div class="topbar">
+        <div class="topbar-title">Negócios</div>
+        <button class="btn btn-primary" onclick="openModal('modal-negocio')">+ Novo Negócio</button>
+      </div>
+      <div style="padding:28px">
+        <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px">
+          <div class="stat-card"><div class="stat-label">Total em Pipeline</div><div class="stat-value" style="color:var(--accent)">R$312k</div></div>
+          <div class="stat-card"><div class="stat-label">Negócios Abertos</div><div class="stat-value">34</div></div>
+          <div class="stat-card"><div class="stat-label">Fechados (Mês)</div><div class="stat-value" style="color:var(--accent3)">12</div></div>
+          <div class="stat-card"><div class="stat-label">Ticket Médio</div><div class="stat-value">R$26k</div></div>
+        </div>
+        <div class="pipeline">
+          <div class="pipeline-col">
+            <div class="pipeline-col-header"><div class="pipeline-dot" style="background:#6b6b85"></div>Prospecção<div class="pipeline-count">4</div></div>
+            <div class="pipeline-card"><h4>Nexus Systems</h4><div class="company">SaaS — São Paulo</div><div class="value">R$15.000</div></div>
+            <div class="pipeline-card"><h4>Primax Ind.</h4><div class="company">Indústria — Porto Alegre</div><div class="value">R$28.500</div></div>
+            <div class="pipeline-card"><h4>Vortex Cloud</h4><div class="company">Cloud — Recife</div><div class="value">R$12.200</div></div>
+            <div class="pipeline-card"><h4>DataBridge</h4><div class="company">Analytics — Brasília</div><div class="value">R$9.800</div></div>
+          </div>
+          <div class="pipeline-col">
+            <div class="pipeline-col-header"><div class="pipeline-dot" style="background:#4facfe"></div>Em Contato<div class="pipeline-count">3</div></div>
+            <div class="pipeline-card"><h4>BlueLine Log.</h4><div class="company">Logística — Santos</div><div class="value">R$34.000</div></div>
+            <div class="pipeline-card"><h4>MedPlus Saúde</h4><div class="company">Saúde — Florianópolis</div><div class="value">R$41.800</div></div>
+            <div class="pipeline-card"><h4>Greenova Bio</h4><div class="company">Biotech — Campinas</div><div class="value">R$22.000</div></div>
+          </div>
+          <div class="pipeline-col">
+            <div class="pipeline-col-header"><div class="pipeline-dot" style="background:#ffd93d"></div>Proposta<div class="pipeline-count">4</div></div>
+            <div class="pipeline-card"><h4>TechKorp Ltda</h4><div class="company">Tecnologia — São Paulo</div><div class="value">R$48.000</div></div>
+            <div class="pipeline-card"><h4>Digitalex</h4><div class="company">Marketing — Curitiba</div><div class="value">R$18.700</div></div>
+            <div class="pipeline-card"><h4>FastShop</h4><div class="company">E-commerce — São Paulo</div><div class="value">R$31.500</div></div>
+            <div class="pipeline-card"><h4>Steeltech</h4><div class="company">Metalurgia — ABC</div><div class="value">R$19.400</div></div>
+          </div>
+          <div class="pipeline-col">
+            <div class="pipeline-col-header"><div class="pipeline-dot" style="background:#6c63ff"></div>Negociação<div class="pipeline-count">3</div></div>
+            <div class="pipeline-card"><h4>Inovadev S.A.</h4><div class="company">Software — Rio de Janeiro</div><div class="value">R$32.500</div></div>
+            <div class="pipeline-card"><h4>Pharmax</h4><div class="company">Farmacêutica — Goiânia</div><div class="value">R$55.000</div></div>
+            <div class="pipeline-card"><h4>UrbanTech</h4><div class="company">Smart City — Belo Horizonte</div><div class="value">R$27.300</div></div>
+          </div>
+          <div class="pipeline-col">
+            <div class="pipeline-col-header"><div class="pipeline-dot" style="background:#43e97b"></div>Fechado<div class="pipeline-count">2</div></div>
+            <div class="pipeline-card"><h4>SoftCorp Brasil</h4><div class="company">Consultoria — Belo Horizonte</div><div class="value">R$21.000</div></div>
+            <div class="pipeline-card"><h4>AgriMax</h4><div class="company">Agro — Uberlândia</div><div class="value">R$14.500</div></div>
+          </div>
+          <div class="pipeline-col">
+            <div class="pipeline-col-header"><div class="pipeline-dot" style="background:#ff6b6b"></div>Perdido<div class="pipeline-count">2</div></div>
+            <div class="pipeline-card" style="opacity:0.6"><h4>Arrowfield Agro</h4><div class="company">Agro — Ribeirão Preto</div><div class="value" style="color:var(--accent2)">R$22.000</div></div>
+            <div class="pipeline-card" style="opacity:0.6"><h4>Globomax</h4><div class="company">Mídia — São Paulo</div><div class="value" style="color:var(--accent2)">R$17.800</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== VENDAS (única aba, sem troca de mês) ====== -->
+    <div class="page" id="page-vendas">
+      <div class="topbar">
+        <div class="topbar-title">Vendas</div>
+        <div class="topbar-search"><span>🔍</span><input type="text" placeholder="Buscar venda..."></div>
+        <button class="btn btn-primary" onclick="openModal('modal-venda')">+ Nova Venda</button>
+      </div>
+      <div style="padding:28px">
+        <!-- Stats -->
+        <div class="vendas-stats">
+          <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-label">Total de Vendas</div><div class="stat-value" style="color:var(--accent3)">R$493k</div><div class="stat-change up">▲ 42 vendas registradas</div></div>
+          <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-label">Ticket Médio</div><div class="stat-value">R$11,7k</div><div class="stat-change up">▲ 6.2% vs anterior</div></div>
+          <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-label">Produtos Vendidos</div><div class="stat-value" style="color:var(--accent)">318</div><div class="stat-change up">▲ 18 este período</div></div>
+          <div class="stat-card"><div class="stat-icon">🔄</div><div class="stat-label">Em Aberto</div><div class="stat-value" style="color:var(--accent2)">7</div><div class="stat-change down">▼ aguardando pagamento</div></div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="tab-filters">
+          <button class="filter-btn active" onclick="filtrarVendas('todas', this)">Todas</button>
+          <button class="filter-btn" onclick="filtrarVendas('pago', this)">Pago</button>
+          <button class="filter-btn" onclick="filtrarVendas('aberto', this)">Em Aberto</button>
+          <button class="filter-btn" onclick="filtrarVendas('cancelado', this)">Cancelado</button>
+        </div>
+
+        <!-- Tabela de Vendas -->
+        <div class="card">
+          <div class="card-header"><h3>💰 Registro de Vendas</h3></div>
+          <table>
+            <thead><tr><th>#</th><th>Data</th><th>Cliente</th><th>Produto/Serviço</th><th>Vendedor</th><th>Valor</th><th>Status</th><th>Ações</th></tr></thead>
+            <tbody id="vendas-tbody">
+              <tr data-status="pago"><td style="color:var(--text-muted);font-size:12px">#V-0042</td><td>27/02/2026</td><td><div class="avatar-cell"><div class="avatar-sm a3">SC</div>SoftCorp Brasil</div></td><td>Licença Enterprise</td><td>Mariana Souza</td><td style="font-weight:700;color:var(--accent3)">R$21.000</td><td><span class="tag tag-green">Pago</span></td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+              <tr data-status="pago"><td style="color:var(--text-muted);font-size:12px">#V-0041</td><td>25/02/2026</td><td><div class="avatar-cell"><div class="avatar-sm a7">FS</div>FastShop Commerce</div></td><td>Módulo Analytics</td><td>Ana Silva</td><td style="font-weight:700;color:var(--accent3)">R$31.500</td><td><span class="tag tag-green">Pago</span></td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+              <tr data-status="aberto"><td style="color:var(--text-muted);font-size:12px">#V-0040</td><td>22/02/2026</td><td><div class="avatar-cell"><div class="avatar-sm a2">ID</div>Inovadev S.A.</div></td><td>Consultoria 60h</td><td>Carlos Lima</td><td style="font-weight:700;color:var(--accent3)">R$18.000</td><td><span class="tag tag-yellow">Em Aberto</span></td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+              <tr data-status="pago"><td style="color:var(--text-muted);font-size:12px">#V-0039</td><td>20/02/2026</td><td><div class="avatar-cell"><div class="avatar-sm a6">BL</div>BlueLine Logística</div></td><td>Plano Anual Pro</td><td>Mariana Souza</td><td style="font-weight:700;color:var(--accent3)">R$14.400</td><td><span class="tag tag-green">Pago</span></td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+              <tr data-status="aberto"><td style="color:var(--text-muted);font-size:12px">#V-0038</td><td>18/02/2026</td><td><div class="avatar-cell"><div class="avatar-sm a1">TK</div>TechKorp Ltda</div></td><td>Implantação + Setup</td><td>João Marcos</td><td style="font-weight:700;color:var(--accent3)">R$8.500</td><td><span class="tag tag-yellow">Em Aberto</span></td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+              <tr data-status="pago"><td style="color:var(--text-muted);font-size:12px">#V-0037</td><td>14/02/2026</td><td><div class="avatar-cell"><div class="avatar-sm a8">MP</div>MedPlus Saúde</div></td><td>Licença Team 50 users</td><td>Carlos Lima</td><td style="font-weight:700;color:var(--accent3)">R$9.600</td><td><span class="tag tag-green">Pago</span></td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+              <tr data-status="cancelado"><td style="color:var(--text-muted);font-size:12px">#V-0036</td><td>10/02/2026</td><td><div class="avatar-cell"><div class="avatar-sm a5">AR</div>Arrowfield Agro</div></td><td>Módulo ERP</td><td>Ana Silva</td><td style="font-weight:700;color:var(--accent2)">R$22.000</td><td><span class="tag tag-red">Cancelado</span></td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+              <tr data-status="pago"><td style="color:var(--text-muted);font-size:12px">#V-0035</td><td>07/02/2026</td><td><div class="avatar-cell"><div class="avatar-sm a4">DX</div>Digitalex Soluções</div></td><td>Onboarding Premium</td><td>João Marcos</td><td style="font-weight:700;color:var(--accent3)">R$4.200</td><td><span class="tag tag-green">Pago</span></td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+              <tr data-status="aberto"><td style="color:var(--text-muted);font-size:12px">#V-0034</td><td>03/02/2026</td><td><div class="avatar-cell"><div class="avatar-sm a6">BL</div>BlueLine Logística</div></td><td>Treinamento Equipe</td><td>Mariana Souza</td><td style="font-weight:700;color:var(--accent3)">R$3.800</td><td><span class="tag tag-yellow">Em Aberto</span></td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+              <tr data-status="pago"><td style="color:var(--text-muted);font-size:12px">#V-0033</td><td>28/01/2026</td><td><div class="avatar-cell"><div class="avatar-sm a7">FS</div>FastShop Commerce</div></td><td>Renovação Anual</td><td>Ana Silva</td><td style="font-weight:700;color:var(--accent3)">R$26.400</td><td><span class="tag tag-green">Pago</span></td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== TAREFAS ====== -->
+    <div class="page" id="page-tarefas">
+      <div class="topbar">
+        <div class="topbar-title">Tarefas</div>
+        <button class="btn btn-primary" onclick="openModal('modal-tarefa')">+ Nova Tarefa</button>
+      </div>
+      <div style="padding:28px">
+        <div class="grid-2">
+          <div>
+            <div class="card" style="margin-bottom:20px">
+              <div class="card-header"><h3>🔴 Pendentes (3)</h3></div>
+              <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+                <div style="background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent2);border-radius:8px;padding:14px">
+                  <div style="font-weight:600;font-size:13px;margin-bottom:4px">Enviar proposta para TechKorp</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Responsável: Ana Silva · Vence hoje</div>
+                  <div style="display:flex;gap:6px"><button class="btn btn-success btn-sm" onclick="this.closest('[style]').remove()">✓ Concluir</button><button class="btn btn-outline btn-sm">Editar</button></div>
+                </div>
+                <div style="background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent2);border-radius:8px;padding:14px">
+                  <div style="font-weight:600;font-size:13px;margin-bottom:4px">Follow-up Inovadev</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Responsável: Carlos Lima · Vence amanhã</div>
+                  <div style="display:flex;gap:6px"><button class="btn btn-success btn-sm" onclick="this.closest('[style]').remove()">✓ Concluir</button><button class="btn btn-outline btn-sm">Editar</button></div>
+                </div>
+                <div style="background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:14px">
+                  <div style="font-weight:600;font-size:13px;margin-bottom:4px">Reunião com SoftCorp</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Responsável: Mariana Souza · 04/03/2026</div>
+                  <div style="display:flex;gap:6px"><button class="btn btn-success btn-sm" onclick="this.closest('[style]').remove()">✓ Concluir</button><button class="btn btn-outline btn-sm">Editar</button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-header"><h3>✅ Concluídas Recentes</h3></div>
+              <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+                <div style="background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent3);border-radius:8px;padding:14px;opacity:0.6">
+                  <div style="font-weight:600;font-size:13px;margin-bottom:4px;text-decoration:line-through">Ligar para FastShop</div>
+                  <div style="font-size:12px;color:var(--text-muted)">Ana Silva · Concluído ontem</div>
+                </div>
+                <div style="background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent3);border-radius:8px;padding:14px;opacity:0.6">
+                  <div style="font-weight:600;font-size:13px;margin-bottom:4px;text-decoration:line-through">Enviar contrato MedPlus</div>
+                  <div style="font-size:12px;color:var(--text-muted)">Carlos Lima · Concluído 27/02</div>
+                </div>
+                <div style="background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent3);border-radius:8px;padding:14px;opacity:0.6">
+                  <div style="font-weight:600;font-size:13px;margin-bottom:4px;text-decoration:line-through">Relatório mensal equipe</div>
+                  <div style="font-size:12px;color:var(--text-muted)">João Marcos · Concluído 26/02</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== RELATÓRIOS ====== -->
+    <div class="page" id="page-relatorios">
+      <div class="topbar"><div class="topbar-title">Relatórios</div></div>
+      <div style="padding:28px">
+        <div class="grid-3" style="margin-bottom:20px">
+          <div class="stat-card" style="cursor:pointer;transition:border-color 0.18s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div class="stat-icon">📊</div><div class="stat-label">Relatório de Vendas</div><div style="font-size:13px;color:var(--text-muted)">Performance e receita por período</div>
+          </div>
+          <div class="stat-card" style="cursor:pointer;transition:border-color 0.18s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div class="stat-icon">👥</div><div class="stat-label">Relatório de Clientes</div><div style="font-size:13px;color:var(--text-muted)">Crescimento e churn da base</div>
+          </div>
+          <div class="stat-card" style="cursor:pointer;transition:border-color 0.18s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div class="stat-icon">🎯</div><div class="stat-label">Funil de Conversão</div><div style="font-size:13px;color:var(--text-muted)">Taxa de conversão por etapa</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>📈 Resumo Geral</h3></div>
+          <table>
+            <thead><tr><th>Métrica</th><th>Resultado</th><th>Meta</th><th>Atingimento</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Receita Total</strong></td><td>R$184.300</td><td>R$200.000</td><td>92%</td><td><span class="tag tag-yellow">92% meta</span></td></tr>
+              <tr><td><strong>Novos Clientes</strong></td><td>18</td><td>20</td><td>90%</td><td><span class="tag tag-yellow">90% meta</span></td></tr>
+              <tr><td><strong>Negócios Fechados</strong></td><td>12</td><td>10</td><td>120%</td><td><span class="tag tag-green">Superado!</span></td></tr>
+              <tr><td><strong>Taxa de Retenção</strong></td><td>94.2%</td><td>90%</td><td>104%</td><td><span class="tag tag-green">Superado!</span></td></tr>
+              <tr><td><strong>NPS (Satisfação)</strong></td><td>72</td><td>70</td><td>103%</td><td><span class="tag tag-green">Superado!</span></td></tr>
+              <tr><td><strong>Churn Rate</strong></td><td>2.1%</td><td>&lt;3%</td><td>—</td><td><span class="tag tag-green">Dentro do limite</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ====== MODAIS ====== -->
+<!-- Modal: Novo Cliente -->
+<div class="modal-overlay" id="modal-cliente">
+  <div class="modal">
+    <h2>👤 Novo Cliente</h2>
+    <div class="form-row">
+      <div class="form-group"><label>Nome / Empresa</label><input type="text" placeholder="Ex: TechKorp Ltda"></div>
+      <div class="form-group"><label>CNPJ / CPF</label><input type="text" placeholder="00.000.000/0001-00"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Email</label><input type="email" placeholder="contato@empresa.com.br"></div>
+      <div class="form-group"><label>Telefone</label><input type="text" placeholder="(11) 9 0000-0000"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Cidade</label><input type="text" placeholder="São Paulo"></div>
+      <div class="form-group"><label>Estado</label><select><option>SP</option><option>RJ</option><option>MG</option><option>RS</option><option>PR</option><option>SC</option><option>BA</option><option>GO</option><option>DF</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Status</label><select><option>Ativo</option><option>Inativo</option><option>Prospecto</option></select></div>
+    </div>
+    <div class="form-group"><label>Observações</label><textarea placeholder="Notas sobre o cliente..."></textarea></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-cliente')">Cancelar</button><button class="btn btn-primary" onclick="closeModal('modal-cliente')">Salvar Cliente</button></div>
+  </div>
+</div>
+
+<!-- Modal: Novo Contato -->
+<div class="modal-overlay" id="modal-contato">
+  <div class="modal">
+    <h2>📇 Novo Contato</h2>
+    <div class="form-row">
+      <div class="form-group"><label>Nome</label><input type="text" placeholder="Nome completo"></div>
+      <div class="form-group"><label>Cargo</label><input type="text" placeholder="Ex: CEO, Gerente..."></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Email</label><input type="email" placeholder="email@empresa.com.br"></div>
+      <div class="form-group"><label>Telefone</label><input type="text" placeholder="(11) 9 0000-0000"></div>
+    </div>
+    <div class="form-group"><label>Empresa</label><select><option>TechKorp Ltda</option><option>Inovadev S.A.</option><option>SoftCorp Brasil</option><option>Digitalex Soluções</option><option>BlueLine Logística</option><option>FastShop Commerce</option><option>MedPlus Saúde</option></select></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-contato')">Cancelar</button><button class="btn btn-primary" onclick="closeModal('modal-contato')">Salvar Contato</button></div>
+  </div>
+</div>
+
+<!-- Modal: Novo Negócio -->
+<div class="modal-overlay" id="modal-negocio">
+  <div class="modal">
+    <h2>💼 Novo Negócio</h2>
+    <div class="form-group"><label>Título do Negócio</label><input type="text" placeholder="Ex: Licença Enterprise - TechKorp"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Cliente</label><select><option>TechKorp Ltda</option><option>Inovadev S.A.</option><option>SoftCorp Brasil</option><option>Digitalex Soluções</option><option>BlueLine Logística</option><option>FastShop Commerce</option></select></div>
+      <div class="form-group"><label>Responsável</label><select><option>Ana Silva</option><option>Carlos Lima</option><option>Mariana Souza</option><option>João Marcos</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Valor Estimado</label><input type="text" placeholder="R$ 0,00"></div>
+      <div class="form-group"><label>Etapa</label><select><option>Prospecção</option><option>Em Contato</option><option>Proposta</option><option>Negociação</option><option>Fechado</option><option>Perdido</option></select></div>
+    </div>
+    <div class="form-group"><label>Data de Previsão</label><input type="date"></div>
+    <div class="form-group"><label>Observações</label><textarea placeholder="Detalhes do negócio..."></textarea></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-negocio')">Cancelar</button><button class="btn btn-primary" onclick="closeModal('modal-negocio')">Salvar Negócio</button></div>
+  </div>
+</div>
+
+<!-- Modal: Nova Venda -->
+<div class="modal-overlay" id="modal-venda">
+  <div class="modal">
+    <h2>💰 Registrar Venda</h2>
+    <div class="form-row">
+      <div class="form-group"><label>Cliente</label><select><option>TechKorp Ltda</option><option>Inovadev S.A.</option><option>SoftCorp Brasil</option><option>Digitalex Soluções</option><option>BlueLine Logística</option><option>FastShop Commerce</option><option>MedPlus Saúde</option></select></div>
+      <div class="form-group"><label>Vendedor</label><select><option>Ana Silva</option><option>Carlos Lima</option><option>Mariana Souza</option><option>João Marcos</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Produto / Serviço</label><input type="text" placeholder="Ex: Licença Enterprise"></div>
+      <div class="form-group"><label>Valor</label><input type="text" placeholder="R$ 0,00"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Data</label><input type="date"></div>
+      <div class="form-group"><label>Status</label><select><option>Pago</option><option>Em Aberto</option><option>Cancelado</option></select></div>
+    </div>
+    <div class="form-group"><label>Observações</label><textarea placeholder="Detalhes da venda..."></textarea></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-venda')">Cancelar</button><button class="btn btn-primary" onclick="closeModal('modal-venda')">Registrar Venda</button></div>
+  </div>
+</div>
+
+<!-- Modal: Nova Tarefa -->
+<div class="modal-overlay" id="modal-tarefa">
+  <div class="modal">
+    <h2>✅ Nova Tarefa</h2>
+    <div class="form-group"><label>Título</label><input type="text" placeholder="Ex: Ligar para cliente"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Responsável</label><select><option>Ana Silva</option><option>Carlos Lima</option><option>Mariana Souza</option><option>João Marcos</option></select></div>
+      <div class="form-group"><label>Prioridade</label><select><option>Alta</option><option>Média</option><option>Baixa</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Vencimento</label><input type="date"></div>
+      <div class="form-group"><label>Relacionado a</label><select><option>— Nenhum —</option><option>TechKorp Ltda</option><option>Inovadev S.A.</option><option>SoftCorp Brasil</option></select></div>
+    </div>
+    <div class="form-group"><label>Descrição</label><textarea placeholder="Detalhes da tarefa..."></textarea></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-tarefa')">Cancelar</button><button class="btn btn-primary" onclick="closeModal('modal-tarefa')">Criar Tarefa</button></div>
+  </div>
+</div>
+
+<!-- Modal: Detalhe Cliente -->
+<div class="modal-overlay" id="modal-detalhe">
+  <div class="modal">
+    <h2>👤 TechKorp Ltda</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">STATUS</div><span class="tag tag-green">Ativo</span></div>
+      <div style="background:var(--surface2);border-radius:8px;padding:12px"><div style="font-size:11px;color:var(--text-muted);ma
